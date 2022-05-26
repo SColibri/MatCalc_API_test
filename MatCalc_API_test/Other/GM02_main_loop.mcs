@@ -1,0 +1,78 @@
+$ last modified by: E. Kabliman 07/04/2021 (TUM)
+$ ********************************************************************************************************************************************
+
+$ make sure we work in the correct module
+use-module core                                          $ select core module for kinetic simulation
+
+$ new workspace (GUI)
+$ new-workspace
+
+set-working-directory <PUT_YOUR_PATH_HERE>
+
+set-variable-value npc              25              $ number of precipitate classes
+
+$ read databases
+$open-thermodyn-database mc_al.tdb
+
+$ We use the ME_Al1.2.tdb, here I left the standard table
+open-thermodyn-database C:/Program Files/MatCalc 6/database/thermodynamic/mc_al.tdb          
+
+select-elements mg si ti cu cr fe mn zn va           
+$ based on the stepped equilibrium calculations (tdb: rel 6-4), we choose the select following phases
+select-phases LIQUID FCC_A1 AL13CR4SI4 ALCRFEMNSI_A AL12MN AL3TI_L MG2SI_B S_PHASE THETA_AL2CU
+
+read-thermodyn-database
+
+read-mobility-database ME-Al_rel1.0e.ddb
+read-physical-database physical_data.pdb
+
+set-reference-element al
+set-variable-value variable=x_mg_0 value=1.0
+set-variable-value variable=x_si_0 value=0.6
+set-variable-value variable=x_ti_0 value=1.0
+set-variable-value variable=x_cu_0 value=0.3	  $ set max value for the first trials
+set-variable-value variable=x_cr_0 value=0.1      $ set max value for the first trials
+set-variable-value variable=x_fe_0 value=0.001	  $ test: the Fe content is varied
+set-variable-value variable=x_mn_0 value=0.001    $ test: the Mn content is varied
+set-variable-value variable=x_zn_0 value=0.001    $ test: the Zn content is varied
+enter-composition type=weight-percent composition="mg=x_mg_0 si=x_si_0 ti=x_ti_0 cu=x_cu_0 cr=x_cr_0 fe=x_fe_0 mn=x_mn_0 zn=x_zn_0"
+
+set-temperature-celsius 700
+$set-automatic-startvalues
+set-start-values
+calculate-equilibrium
+
+set-variable-value variable=delta value=0.05
+set-variable-value variable=nrw value=-1.0
+create-global-array new-array-name=fractions
+for (i;1..10)                                     
+	@ set-function-expression function=x_fe expression=x_fe_0+(i-1)*delta
+    @ show-expression expression=x_fe
+	@ enter-composition type=weight-percent composition="fe=x_fe"
+	for (j;1..3) 
+		@ set-function-expression function=x_mn expression=x_mn_0+(j-1)*delta
+		@ show-expression expression=x_mn
+		@ enter-composition type=weight-percent composition="mn=x_mn"
+		for (k;1..5) 
+			@ set-function-expression function=x_zn expression=x_zn_0+(k-1)*delta
+		    @ show-expression expression=x_zn
+			@ enter-composition type=weight-percent composition="zn=x_zn"
+			@ set-function-expression function=nrw_i expression=nrw+1
+			@ show-expression expression=nrw_i
+			@ set-variable-value variable=nrw value=nrw_i
+			@ run-script-file file-name="C:/Users/drogo/Desktop/Homless/GM02_sge_loop.mcs"
+		endfor
+	endfor
+endfor
+
+$ add here the header to the file (look for the old scripts)
+export-global-array array-name=fractions file-name= <PUT_YOUR_PATH>/GM02_SG_fractions.txt
+
+$ ********************************************************************************************************************************************
+$ C:\Program Files\MatCalc 6\scripts\script_menu\templates\miscellaneous\loops_and_conditions --> loop_demonstration 
+$ for each new simulation (iteration) create-new-buffer OR into save into the array
+$ create-global-array new-array-name=fractions
+$ set-global-array-value array-name=fractions row=0 col=0 cell=1
+$ set-global-array-value array-name=fractions row=0 col=0 cell=F$ALFESI_T6
+$ export-global-array array-name=fractions file-name=fractions-sim1.txt
+$ GUI: "global"-->"table and arrays"-->"edit"-->"write"

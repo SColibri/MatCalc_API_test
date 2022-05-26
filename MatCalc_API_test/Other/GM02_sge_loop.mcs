@@ -1,0 +1,39 @@
+$ last modified by: E. Kabliman 05/07/2021 (TUM)
+$ ********************************************************************************************************************************************
+$ set up Scheil-Gulliver simulation
+set-step-option type=scheil           		                        $ Type: (S) SG calculation
+set-step-option range start=700 stop=25 step-width=1     			$ From 700 to 400 with 1°C step
+set-step-option scheil-dependent-phase=LIQUID               		$ Dependent phase: Liquid
+set-step-option scheil-minimum-liquid-fraction=0.01            		$ Residual liquid fraction: typically 3%
+set-step-option scheil-create-phases-automatically=yes              $ Omit the pop-up window
+step-equilibrium 
+
+$$
+$ plot output (GUI)
+new-gui-window type-id=p1                                 								$ create plot window
+move-gui-window displace window-id=. x-origin=150 y-origin=100 width=600 height=500     $ move and resize plot window
+set-gui-window-property window-id=. default-x-axis-title=Temperature                    $ enter x-axis-title.
+$set-gui-window-property . x t$c                    								    $ x-axis data
+set-gui-window-property . default-x-axis-data=t$c
+set-plot-option plot-id=. plot-title=Scheil-Gulliver Calculation    					$ plot title
+set-plot-option plot-id=. y-axis-title=Phase fraction           						$ axis title
+$set-plot-options . series new b f$*_s %s
+set-plot-option plot-id=. series new b f$*                      						$ add series
+set-plot-option plot-id=. y-axis-type=log                      							$ type: log
+set-plot-option plot-id=. axis y-axis-scaling=1e-10..1				   					$ scaling (s), enter value.
+$$
+
+load-buffer-state -1                                               				        $ Load the buffer state (-1 for the last line=values)    
+         
+set-global-array-value array-name=fractions row=nrw col=0 cell=x_fe
+set-global-array-value array-name=fractions row=nrw col=1 cell=x_mn
+set-global-array-value array-name=fractions row=nrw col=2 cell=x_zn
+set-global-array-value array-name=fractions row=nrw col=3 cell=F$AL13CR4SI4_S
+set-global-array-value array-name=fractions row=nrw col=4 cell=F$ALCRFEMNSI_A_S
+set-global-array-value array-name=fractions row=nrw col=5 cell=F$AL12MN_S
+set-global-array-value array-name=fractions row=nrw col=6 cell=F$AL3TI_L_S
+set-global-array-value array-name=fractions row=nrw col=7 cell=F$MG2SI_B_S
+set-global-array-value array-name=fractions row=nrw col=8 cell=F$S_PHASE_S
+set-global-array-value array-name=fractions row=nrw col=9 cell=F$THETA_AL2CU_S
+
+$ ********************************************************************************************************************************************
