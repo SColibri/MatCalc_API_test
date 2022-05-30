@@ -22,11 +22,18 @@ int main()
 	HINSTANCE _library = LoadLibrary(TEXT("C:/Program Files/MatCalc 6/mc_core.dll"));
 	AM_MCC_LIB_LOAD_ALL(_library);
 	
+
+	// MATCALC Feedback: use initialize external const char
+	bool out_initialize = MCC_InitializeExternalConstChar("C: / Program Files / MatCalc 6", false);
+	int out_openDatabase = MCC_OpenDatabaseFileChar("C:/Program Files/MatCalc 6/database/thermodynamic/mc_al.tdb", DBOC_EQUILIBRIUM, false);
+	int out_readDatabase = MCC_ReadDatabaseFile(DBOC_EQUILIBRIUM, true, false);
+	int elementName = MCC_GetElementIndex("AL");
 	// NOTE: Please change the working directory and database paths inside the script!
 	// When I set an invalid path out = 51
+	// No error when out code is 50, but no work was done.
 	// When setting a valid path exception is thrown 
-	int out = MCCOL_RunScriptFileChar("Other/GM02_main_loop.mcs"); // Result is code 51, the scripts do work.
-	
+	int out = MCCOL_RunScriptFileChar("Other/GM02_main_loop.mcs"); // Result is code 50.
+
 	// Same problem arises when using the static library
 #pragma endregion
 
